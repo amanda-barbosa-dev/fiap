@@ -1,0 +1,20 @@
+package fiap.medicalappointmentsservice.domain.model;
+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
+public class User {
+    private Long id;
+    private String name;
+    private String phoneNumber;
+    private String medicalSpeciality;
+    private String password;
+    private String username;
+    private String role;
+}
