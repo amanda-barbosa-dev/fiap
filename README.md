@@ -29,7 +29,6 @@ O sistema atende diferentes perfis de usuários com controle de acesso rigoroso:
 - **PostgreSQL** (persistência)
 - **Docker** + **Docker Compose** (containerização)
 - **Arquitetura Hexagonal** (Ports & Adapters) → separação clara de domínios, aplicação e infraestrutura
-- **JUnit 5 + Mockito + Testcontainers** → cobertura de testes > 80%
 - **Maven** (build)
 
 ### Objetivos Atendidos (Requisitos da Fase 3)
@@ -113,8 +112,8 @@ notificationservice (8081)
 
 Aguarde ~30-60 segundos até os serviços estarem prontos
 Acesse:
-Swagger/OpenAPI (se configurado): http://localhost:8080/swagger-ui.html
 GraphQL Playground: http://localhost:8080/graphql (use o Altair ou Postman)
+Baixe a collection do Postaman para testar.
 
 
 Executar sem Docker (desenvolvimento)
