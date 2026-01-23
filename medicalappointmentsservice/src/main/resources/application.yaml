@@ -11,6 +11,12 @@ spring:
     init:
       mode: always
 
+  graphql:
+    path: /graphql
+    graphiql:
+      enabled: true
+      path: /graphiql
+
   datasource:
     url: jdbc:h2:mem:testdb
     driver-class-name: org.h2.Driver

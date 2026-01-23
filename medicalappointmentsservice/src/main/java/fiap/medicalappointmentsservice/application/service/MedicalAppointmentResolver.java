@@ -1,5 +1,6 @@
-package fiap.medicalappointmentsservice.application.api;
+package fiap.medicalappointmentsservice.application.service;
 
+import fiap.medicalappointmentsservice.domain.port.in.MedicalAppointmentGraphQLInterface;
 import fiap.medicalappointmentsservice.domain.port.out.MedicalAppointmentRepositoryPortOut;
 import fiap.medicalappointmentsservice.infrastructure.persistence.entity.MedicalAppointmentEntity;
 import lombok.RequiredArgsConstructor;
@@ -12,7 +13,7 @@ import java.util.List;
 
 @Component
 @RequiredArgsConstructor
-public class MedicalAppointmentResolver {
+public class MedicalAppointmentResolver implements MedicalAppointmentGraphQLInterface {
 
     private final MedicalAppointmentRepositoryPortOut repository;
 

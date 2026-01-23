@@ -1,7 +1,6 @@
 package fiap.medicalappointmentsservice.application.service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+
 import fiap.medicalappointmentsservice.domain.dto.CreateAppointmentDto;
 import fiap.medicalappointmentsservice.domain.dto.UpdateAppointmentDto;
 import fiap.medicalappointmentsservice.domain.model.MedicalAppointment;
@@ -14,6 +13,7 @@ import fiap.medicalappointmentsservice.shared.validator.MedicalAppointmentValida
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import tools.jackson.databind.ObjectMapper;
 
 import static fiap.medicalappointmentsservice.application.service.mapper.MedicalAppointmentMapper.*;
 
@@ -105,13 +105,11 @@ public class MedicalAppointmentsServiceUseCase implements SchedulerServicePortIn
 
         log.info("Service - updateMedicalAppointment - sending kafka evet: {}", medicalAppointmentResponse);
 
-        try {
+
            objectMapper.writeValueAsString(medicalAppointmentResponse);
 
 
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException("Error converting medical appointment to event");
-        }
+
 
         eventProducerPortOut.sendEvent("medical-events-topic", medicalAppointmentResponse.toString());
 
