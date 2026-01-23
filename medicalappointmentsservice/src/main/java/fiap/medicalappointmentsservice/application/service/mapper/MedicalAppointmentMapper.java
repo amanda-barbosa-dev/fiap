@@ -8,6 +8,7 @@ import fiap.medicalappointmentsservice.shared.enuns.AppointmentStatus;
 import lombok.Data;
 import org.springframework.stereotype.Component;
 
+import java.util.Objects;
 import java.util.Optional;
 
 import static fiap.medicalappointmentsservice.shared.enuns.AppointmentStatus.SCHEDULED;
@@ -18,10 +19,14 @@ public class MedicalAppointmentMapper {
 
 
     public static MedicalAppointment mapCreateMedicalAppointmentDtoToMedicalAppointment(CreateAppointmentDto createAppointmentDto) {
+        Long validId = Optional.of(createAppointmentDto).map(CreateAppointmentDto::getId).orElse(null);
+
         return MedicalAppointment.builder()
+                .id(validId)
                 .createDate(null)
                 .updateDate(null)
                 .patient(createAppointmentDto.getPatient())
+                .phoneNumber(createAppointmentDto.getPhoneNumber())
                 .doctor(createAppointmentDto.getDoctor())
                 .medicalSpecialty(createAppointmentDto.getMedicalSpecialty())
                 .appointmentDate(createAppointmentDto.getAppointmentDate())
@@ -30,18 +35,12 @@ public class MedicalAppointmentMapper {
     }
 
     public static MedicalAppointment mapUpdateMedicalAppointmentDtoToMedicalAppointment(Long id, UpdateAppointmentDto updateAppointmentDto, AppointmentStatus appointmentStatus) {
-        String status = Optional.of(String.valueOf(appointmentStatus)).orElse(null);
         String date = Optional.of(updateAppointmentDto.getAppointmentDate()).orElse(null);
-
         boolean isRescheduled;
+        String status;
+        status = String.valueOf(Objects.requireNonNullElse(appointmentStatus, SCHEDULED));
 
-
-        if (status != null && !status.equals(String.valueOf(SCHEDULED))) {
-            isRescheduled = false;
-
-        } else {
-            isRescheduled = true;
-        }
+        isRescheduled = status.equals(String.valueOf(SCHEDULED));
 
         return MedicalAppointment.builder()
                 .id(id)

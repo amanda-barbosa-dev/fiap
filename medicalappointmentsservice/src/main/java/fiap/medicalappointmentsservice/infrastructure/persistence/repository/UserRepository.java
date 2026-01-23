@@ -28,5 +28,5 @@ public class UserRepository implements UserRepositoryPortOut {
     @Override
     public Optional<UserEntity> findByNameAndMedicalSpecialty(@Param("name") String name, @Param("medicalSpecialty") String medicalSpecialty){
         return jpaUserRepository.findByNameAndMedicalSpecialty(name.toUpperCase(), medicalSpecialty.toUpperCase());
-    };
+    }
 }

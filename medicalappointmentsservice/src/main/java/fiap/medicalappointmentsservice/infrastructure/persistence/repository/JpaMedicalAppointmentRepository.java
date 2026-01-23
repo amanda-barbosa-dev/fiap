@@ -1,6 +1,5 @@
 package fiap.medicalappointmentsservice.infrastructure.persistence.repository;
 
-import fiap.medicalappointmentsservice.domain.model.MedicalAppointment;
 import fiap.medicalappointmentsservice.infrastructure.persistence.entity.MedicalAppointmentEntity;
 import jakarta.transaction.Transactional;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -18,9 +17,9 @@ public interface JpaMedicalAppointmentRepository extends JpaRepository<MedicalAp
     @Query(value = "UPDATE tb_medical_appointments SET status = :status, appointment_date = :appointmentDate WHERE id = :id", nativeQuery = true)
     void update(@Param("id") Long id, @Param("status") String status, @Param("appointmentDate") String appointmentDate);
 
-    @Query("SELECT m FROM MedicalAppointment m WHERE m.patient = :patient")
-    List<MedicalAppointment> findByPatient(String patient);
+    @Query("SELECT m FROM MedicalAppointmentEntity m WHERE m.patient = :patient")
+    List<MedicalAppointmentEntity> findByPatient(String patient);
 
-    @Query("SELECT m FROM MedicalAppointment m WHERE m.patient = :patient AND m.appointmentDate > CURRENT_DATE")
-    List<MedicalAppointment> findFutureByPatient(String patient);
+    @Query("SELECT m FROM MedicalAppointmentEntity m WHERE m.patient = :patient AND m.appointmentDate > :date")
+    List<MedicalAppointmentEntity> findFutureByPatient(String patient, String date);
 }

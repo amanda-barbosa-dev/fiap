@@ -6,7 +6,6 @@ import fiap.medicalappointmentsservice.domain.port.out.MedicalAppointmentReposit
 import fiap.medicalappointmentsservice.domain.port.out.UserRepositoryPortOut;
 import fiap.medicalappointmentsservice.infrastructure.persistence.entity.MedicalAppointmentEntity;
 import fiap.medicalappointmentsservice.infrastructure.persistence.entity.UserEntity;
-import fiap.medicalappointmentsservice.shared.enuns.AppointmentStatus;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -16,6 +15,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @Component
@@ -24,62 +24,68 @@ import java.util.Optional;
 @Slf4j
 public class MedicalAppointmentValidator {
 
-    private final String SCHEDULED = AppointmentStatus.SCHEDULED.toString();
-    private final String COMPLETED = AppointmentStatus.COMPLETED.toString();
-    private final String CANCELED = AppointmentStatus.CANCELED.toString();
     private final MedicalAppointmentRepositoryPortOut medicalAppointmentRepository;
     private final UserRepositoryPortOut userRepository;
     private final MedicalAppointmentMapper mapper;
     private DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+    LocalDateTime checkedCreateDate;
+    LocalDateTime checkedUpdateDate;
+    String checkedPatient;
+    String checkedDoctor;
+    String checkedMedicalSpecialty;
+    String checkedAppointmentDate;
+    String checkedPhoneNumber;
+    MedicalAppointmentEntity entity;
+    Long id;
 
 
 
     public MedicalAppointment validateUpdateMedicalAppointment(MedicalAppointment medicalAppointment) throws IllegalArgumentException {
 
 
-        Long medicalAppointmentId = medicalAppointment.getId();
-        String medicalAppointmentDate = medicalAppointment.getAppointmentDate();
+        id = medicalAppointment.getId();
         String status = medicalAppointment.getStatus();
 
 
-        var entity = findMedicalAppointmentById(medicalAppointmentId);
 
-        LocalDateTime checkedCreateDate = entity.getCreateDate();
-        LocalDateTime checkedUpdateDate = LocalDateTime.now();
-        String checkedPatient = entity.getPatient();
-        String checkedDoctor = entity.getDoctor();
-        String checkedMedicalSpeciality = entity.getMedicalSpecialty();
-        String checkedAppointmentDate;
+            entity = findMedicalAppointmentById(id);
 
-            if (medicalAppointment.isRescheduled()) {
-                    checkedAppointmentDate = entity.getAppointmentDate();
-                    return MedicalAppointment.builder()
-                        .id(medicalAppointmentId)
-                            .phoneNumber(medicalAppointment.getPhoneNumber())
-                        .updateDate(checkedUpdateDate)
-                        .appointmentDate(checkedAppointmentDate)
-                        .status("CANCELED")
-                        .isRescheduled(medicalAppointment.isRescheduled())
-                        .build();
+             checkedCreateDate = entity.getCreateDate();
+             checkedUpdateDate = LocalDateTime.now();
+             checkedPatient = entity.getPatient();
+             checkedDoctor = entity.getDoctor();
+             checkedMedicalSpecialty = entity.getMedicalSpecialty();
+             checkedPhoneNumber = entity.getPhoneNumber();
 
-            } else {
-                if (status.equals("SCHEDULED")) {
-                    checkedAppointmentDate = medicalAppointmentDate;
-                    checkAvailability(checkedDoctor, checkedPatient, checkedAppointmentDate, entity);
-                }
+
+
+
+        if (medicalAppointment.isRescheduled()) {
+            checkedAppointmentDate = entity.getAppointmentDate();
+            return MedicalAppointment.builder()
+                    .id(id)
+                    .appointmentDate(checkedAppointmentDate)
+                    .status("CANCELED")
+                    .patient(checkedPatient)
+                    .phoneNumber(checkedPhoneNumber)
+                    .doctor(checkedDoctor)
+                    .medicalSpecialty(checkedMedicalSpecialty)
+                    .isRescheduled(medicalAppointment.isRescheduled())
+                    .build();
+
+        } else {
                 checkedAppointmentDate = entity.getAppointmentDate();
-
-            }
+        }
 
         return MedicalAppointment.builder()
-                .id(medicalAppointmentId)
+                .id(id)
                 .createDate(checkedCreateDate)
                 .updateDate(checkedUpdateDate)
                 .appointmentDate(checkedAppointmentDate)
                 .patient(checkedPatient)
-                .phoneNumber(medicalAppointment.getPhoneNumber())
+                .phoneNumber(checkedPhoneNumber)
                 .doctor(checkedDoctor)
-                .medicalSpecialty(checkedMedicalSpeciality)
+                .medicalSpecialty(checkedMedicalSpecialty)
                 .status(status)
                 .isRescheduled(medicalAppointment.isRescheduled())
                 .build();
@@ -90,20 +96,17 @@ public class MedicalAppointmentValidator {
 
     public MedicalAppointment validadeCreateMedicalAppointment(MedicalAppointment medicalAppointment) {
 
+
         String status = medicalAppointment.getStatus();
+        id = medicalAppointment.getId();
 
         LocalDateTime createDate = LocalDateTime.now();
-        String checkedPatient = isValidPatientName(medicalAppointment.getPatient());
-        String checkedDoctor = isValidDoctorName(medicalAppointment.getDoctor());
-        String checkedMedicalSpecialty = isValidDoctorMedicalSpecialty(checkedDoctor, medicalAppointment.getMedicalSpecialty());
-        String checkedAppointmentDate = isValidAppointmentDate(medicalAppointment.getAppointmentDate());
+         checkedPatient = isValidPatientName(medicalAppointment.getPatient());
+         checkedDoctor = isValidDoctorName(medicalAppointment.getDoctor());
+         checkedMedicalSpecialty = isValidDoctorMedicalSpecialty(checkedDoctor, medicalAppointment.getMedicalSpecialty());
+         checkedAppointmentDate = isValidAppointmentDate(medicalAppointment.getAppointmentDate());
 
-        List<MedicalAppointmentEntity> medicalAppointmentEntityList = findAllMedicalAppointments();
-        if (!medicalAppointmentEntityList.isEmpty()) {
-            medicalAppointmentEntityList.forEach(entity -> {
-                checkAvailability(checkedDoctor, checkedPatient, checkedAppointmentDate, entity);
-            });
-        }
+        checkScheduleConflict(checkedDoctor, checkedPatient, checkedAppointmentDate);
 
         return MedicalAppointment.builder()
                 .createDate(createDate)
@@ -118,46 +121,64 @@ public class MedicalAppointmentValidator {
 
     }
 
+    public  void checkScheduleConflict(String checkedDoctor, String checkedPatient, String checkedAppointmentDate){
+
+
+        List<MedicalAppointmentEntity> medicalAppointmentEntityList = findAllMedicalAppointments();
+
+        if (!medicalAppointmentEntityList.isEmpty()) {
+            medicalAppointmentEntityList.forEach(foundedEntity ->
+                checkAvailability(checkedDoctor, checkedPatient, checkedAppointmentDate, foundedEntity)
+            );
+        }
+    }
+
     public void checkAvailability(String checkedDoctor, String checkedPatient, String validAppointmentDate, MedicalAppointmentEntity entity) {
 
 
         String entityDoctorName = entity.getDoctor();
         String entityPatientName = entity.getPatient();
+        Long entityId = entity.getId();
 
         String entityStatus = Optional.of(entity)
                 .map(MedicalAppointmentEntity::getStatus)
-                .orElse(SCHEDULED);
+                .orElse("SCHEDULED");
 
         String entityAppointmentDate = entity.getAppointmentDate();
-
-
-        String formattedEntityAppointmentDate = entityAppointmentDate.substring(11, 16);
-        String formattedValidAppointmentDate = validAppointmentDate.substring(11, 16);
 
 
         LocalDateTime localDateTimeAppointmentDate = LocalDateTime.parse(entityAppointmentDate, formatter);
         LocalDateTime localDateTimeValidAppointmentDate = LocalDateTime.parse(validAppointmentDate, formatter);
 
-        if (entityStatus.equals(SCHEDULED)) {
-            if (entityDoctorName.equalsIgnoreCase(checkedDoctor) && entityPatientName.equalsIgnoreCase(checkedPatient)) {
-                if (entityAppointmentDate.equals(validAppointmentDate)) {
-                    throw new IllegalArgumentException("Patient already has an appointment with this doctor at: " + validAppointmentDate);
+        if (!Objects.equals(entityId, id) && entityStatus.equals("SCHEDULED")){
+            checkDoctorPatientConflict(checkedDoctor, checkedPatient, validAppointmentDate, entityDoctorName, entityPatientName, entityAppointmentDate, localDateTimeAppointmentDate, localDateTimeValidAppointmentDate);
+            checkDoctorAvailability(checkedDoctor, validAppointmentDate, entityDoctorName, entityAppointmentDate);
+            checkPatientAvailability(checkedPatient, validAppointmentDate, entityPatientName, entityAppointmentDate);
+        }
+    }
 
-                } else {
-
-                    if (!formattedEntityAppointmentDate.equals(formattedValidAppointmentDate)) {
-                        throw new IllegalArgumentException("Patient already has an appointment with this doctor at the same day at: " + formattedEntityAppointmentDate);
-                    }
-                    if (localDateTimeValidAppointmentDate.isBefore(localDateTimeAppointmentDate.plusDays(30))) {
-                        throw new IllegalArgumentException("Patient already has an appointment with this doctor within 30 days.");
-                    }
-
-                }
+    private void checkDoctorPatientConflict(String checkedDoctor, String checkedPatient, String validAppointmentDate, String entityDoctorName, String entityPatientName, String entityAppointmentDate, LocalDateTime localDateTimeAppointmentDate, LocalDateTime localDateTimeValidAppointmentDate) {
+        if (entityDoctorName.equalsIgnoreCase(checkedDoctor) && entityPatientName.equalsIgnoreCase(checkedPatient)) {
+            if (entityAppointmentDate.equals(validAppointmentDate)) {
+                throw new IllegalArgumentException("Patient already has an appointment with this doctor at: " + validAppointmentDate);
             }
+            if (localDateTimeAppointmentDate.toLocalDate().equals(localDateTimeValidAppointmentDate.toLocalDate())) {
+                throw new IllegalArgumentException("Patient already has an appointment with this doctor on the same day at: " + entityAppointmentDate.substring(11, 16));
+            }
+            if (localDateTimeValidAppointmentDate.isBefore(localDateTimeAppointmentDate.plusDays(30)) && localDateTimeValidAppointmentDate.isAfter(localDateTimeAppointmentDate)) {
+                throw new IllegalArgumentException("Patient already has an appointment with this doctor within 30 days.");
+            }
+        }
+    }
 
-        } else if (entityDoctorName.equalsIgnoreCase(checkedDoctor) && entityAppointmentDate.equals(validAppointmentDate)) {
+    private void checkDoctorAvailability(String checkedDoctor, String validAppointmentDate, String entityDoctorName, String entityAppointmentDate) {
+        if (entityDoctorName.equalsIgnoreCase(checkedDoctor) && entityAppointmentDate.equals(validAppointmentDate)) {
             throw new IllegalArgumentException("Doctor is not available at: " + validAppointmentDate);
-        } else if (entityPatientName.equalsIgnoreCase(checkedPatient) && entityAppointmentDate.equals(validAppointmentDate)) {
+        }
+    }
+
+    private void checkPatientAvailability(String checkedPatient, String validAppointmentDate, String entityPatientName, String entityAppointmentDate) {
+        if (entityPatientName.equalsIgnoreCase(checkedPatient) && entityAppointmentDate.equals(validAppointmentDate)) {
             throw new IllegalArgumentException("Patient is not available at: " + validAppointmentDate);
         }
     }

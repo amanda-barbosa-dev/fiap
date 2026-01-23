@@ -58,10 +58,10 @@ public class MedicalAppointmentsServiceUseCase implements SchedulerServicePortIn
 
 
     @Override
-    public MedicalAppointment updateMedicalAppointment(Long id, UpdateAppointmentDto updateAppointmentDto, AppointmentStatus appointmentStatus) {
-        log.info("Service - updateMedicalAppointment - request: ID {}: {} - {}", id, updateAppointmentDto, appointmentStatus);
+    public MedicalAppointment updateMedicalAppointment(Long idDto, UpdateAppointmentDto updateAppointmentDto, AppointmentStatus appointmentStatus) {
+        log.info("Service - updateMedicalAppointment - request: ID {}: {} - {}", idDto, updateAppointmentDto, appointmentStatus);
 
-        MedicalAppointment medicalAppointmentRequest = mapUpdateMedicalAppointmentDtoToMedicalAppointment(id, updateAppointmentDto, appointmentStatus);
+        MedicalAppointment medicalAppointmentRequest = mapUpdateMedicalAppointmentDtoToMedicalAppointment(idDto, updateAppointmentDto, appointmentStatus);
         MedicalAppointment validMedicalAppointment = medicalAppointmentValidator.validateUpdateMedicalAppointment(medicalAppointmentRequest);
         MedicalAppointmentEntity mappedMedicalAppointmentEntity;
 
@@ -69,15 +69,27 @@ public class MedicalAppointmentsServiceUseCase implements SchedulerServicePortIn
             log.info("Service - updateMedicalAppointment - Updating medical appointment");
 
 
+
             if (validMedicalAppointment.isRescheduled()) {
-                medicalAppointmentRepository.update(id,validMedicalAppointment.getStatus(), validMedicalAppointment.getAppointmentDate());
-                mappedMedicalAppointmentEntity = mapValidMedicalAppointmentToMedicalAppointmentEntity(validMedicalAppointment);
-                medicalAppointmentRepository.save(mappedMedicalAppointmentEntity);
 
+                medicalAppointmentRepository.update(idDto,validMedicalAppointment.getStatus(), validMedicalAppointment.getAppointmentDate());
 
+                CreateAppointmentDto createAppointmentDto = CreateAppointmentDto.builder()
+                        .id(idDto)
+                        .patient(validMedicalAppointment.getPatient())
+                        .phoneNumber(validMedicalAppointment.getPhoneNumber())
+                        .doctor(validMedicalAppointment.getDoctor())
+                        .medicalSpecialty(validMedicalAppointment.getMedicalSpecialty())
+                        .appointmentDate(updateAppointmentDto.getAppointmentDate())
+                        .build();
 
+                MedicalAppointment createMedicalAppointmentRequest = mapCreateMedicalAppointmentDtoToMedicalAppointment(createAppointmentDto);
+                MedicalAppointment validCreateMedicalAppointment = medicalAppointmentValidator.validadeCreateMedicalAppointment(createMedicalAppointmentRequest);
+                MedicalAppointmentEntity mappedCreateMedicalAppointmentEntity = mapValidMedicalAppointmentToMedicalAppointmentEntity(validCreateMedicalAppointment);
+                medicalAppointmentRepository.save(mappedCreateMedicalAppointmentEntity);
+                mappedMedicalAppointmentEntity = mappedCreateMedicalAppointmentEntity;
             } else {
-                medicalAppointmentRepository.update(id, validMedicalAppointment.getStatus(), validMedicalAppointment.getAppointmentDate());
+                medicalAppointmentRepository.update(idDto,validMedicalAppointment.getStatus(), validMedicalAppointment.getAppointmentDate());
                 mappedMedicalAppointmentEntity = mapValidMedicalAppointmentToMedicalAppointmentEntity(validMedicalAppointment);
             }
 
@@ -94,8 +106,8 @@ public class MedicalAppointmentsServiceUseCase implements SchedulerServicePortIn
         log.info("Service - updateMedicalAppointment - sending kafka evet: {}", medicalAppointmentResponse);
 
         try {
-            String jsonOutput = objectMapper.writeValueAsString(medicalAppointmentResponse);
-            System.out.println(jsonOutput);
+           objectMapper.writeValueAsString(medicalAppointmentResponse);
+
 
         } catch (JsonProcessingException e) {
             throw new RuntimeException("Error converting medical appointment to event");
@@ -105,4 +117,5 @@ public class MedicalAppointmentsServiceUseCase implements SchedulerServicePortIn
 
         return medicalAppointmentResponse;
     }
+
 }
