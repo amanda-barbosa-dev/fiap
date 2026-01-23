@@ -1,12 +1,10 @@
-FROM maven:3.9.5-amazoncorretto-21 AS build
+FROM maven:3.9.6-eclipse-temurin-21 AS build
 WORKDIR /app
-COPY pom.xml .
-COPY src ./src
+COPY . .
 RUN mvn clean package -DskipTests
 
-
-FROM amazoncorretto:21-alpine
+FROM eclipse-temurin:21-jdk
 WORKDIR /app
-COPY --from=build /app/target/*.jar app.jar
-EXPOSE 8081  # Porta do Spring Boot
-ENTRYPOINT ["java", "-jar", "app.jar"]
+COPY --from=build /app/target/*.jar notification.jar
+EXPOSE 8081
+ENTRYPOINT ["java", "-jar", "notification.jar"]
