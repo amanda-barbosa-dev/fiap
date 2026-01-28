@@ -69,6 +69,12 @@
             <version>2.15.2</version> <!-- Use a recent version -->
         </dependency>
 
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <version>42.6.0</version>
+        </dependency>
+
     </dependencies>
 
     <build>
