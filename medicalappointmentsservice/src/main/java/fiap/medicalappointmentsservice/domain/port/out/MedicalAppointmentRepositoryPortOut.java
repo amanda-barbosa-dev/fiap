@@ -2,7 +2,9 @@ package fiap.medicalappointmentsservice.domain.port.out;
 
 import fiap.medicalappointmentsservice.domain.model.MedicalAppointment;
 import fiap.medicalappointmentsservice.infrastructure.persistence.entity.MedicalAppointmentEntity;
+import org.springframework.cglib.core.Local;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -18,5 +20,5 @@ public interface MedicalAppointmentRepositoryPortOut {
 
     List<MedicalAppointmentEntity> findByPatient(String patient);
 
-    List<MedicalAppointmentEntity> findFutureByPatient(String patient, String currentDate);
+    List<MedicalAppointmentEntity> findFutureByPatient(String patient);
 }

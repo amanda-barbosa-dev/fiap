@@ -23,6 +23,9 @@ public interface JpaMedicalAppointmentRepository extends JpaRepository<MedicalAp
     @Query("SELECT m FROM MedicalAppointmentEntity m WHERE m.patient = :patient")
     List<MedicalAppointmentEntity> findByPatient(@Param("patient") String patient);
 
-    @Query("SELECT m FROM MedicalAppointmentEntity m WHERE m.patient = :patient AND m.appointmentDate > :currentDate")
-    List<MedicalAppointmentEntity> findFutureByPatient(@Param("patient")String patient, @Param("currentDate") String currentDate);
+    @Query("SELECT m FROM MedicalAppointmentEntity m WHERE m.patient = :patient AND m.status = 'SCHEDULED'")
+    List<MedicalAppointmentEntity> findFutureByPatient(@Param("patient") String patient);
+
+
+
 }

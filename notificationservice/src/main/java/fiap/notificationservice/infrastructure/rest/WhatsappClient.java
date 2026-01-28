@@ -1,12 +1,12 @@
 package fiap.notificationservice.infrastructure.rest;
 
-import fiap.notificationservice.domain.port.out.WathsappSenderPortOut;
+import fiap.notificationservice.domain.port.out.WhatsappSenderPortOut;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 @RequiredArgsConstructor
 @Component
-public class WhatsappClient implements WathsappSenderPortOut {
+public class WhatsappClient implements WhatsappSenderPortOut {
     @Override
     public void sendNotification(String phoneNumber, String message) {
         System.out.println("=====================================");

@@ -55,7 +55,7 @@ public class MedicalAppointmentsServiceUseCase implements SchedulerServicePortIn
 
         log.info("Service - createMedicalAppointment - response: {}", medicalAppointmentResponse);
 
-        eventProducerPortOut.sendEvent("medical-events-topic", medicalAppointmentResponse.toString());
+        eventProducerPortOut.sendEvent("medical-events-topic", medicalAppointmentResponse);
 
 
         return medicalAppointmentResponse;
@@ -99,30 +99,21 @@ public class MedicalAppointmentsServiceUseCase implements SchedulerServicePortIn
 
         log.info("Service - updateMedicalAppointment - sending kafka evet: {}", medicalAppointmentResponse);
 
-        try {
-            String jsonOutput = objectMapper.writeValueAsString(medicalAppointmentResponse);
-            System.out.println(jsonOutput);
 
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException("Error converting medical appointment to event");
-        }
-
-        eventProducerPortOut.sendEvent("medical-events-topic", medicalAppointmentResponse.toString());
+        eventProducerPortOut.sendEvent("medical-events-topic", medicalAppointmentResponse);
 
         return medicalAppointmentResponse;
     }
 
 
     public List<MedicalAppointment> allAppointmentsForPatient(String patient) {
-        List<MedicalAppointmentEntity> appointmentEntitiesList = medicalAppointmentRepository.findByPatient(patient);
+        List<MedicalAppointmentEntity> appointmentEntitiesList = medicalAppointmentRepository.findByPatient(patient.toUpperCase());
         return appointmentEntitiesList.stream().map(MedicalAppointmentMapper::mapMedicalAppointmentEntityToMedicalAppointment).toList();
     }
 
 
     public List<MedicalAppointment> futureAppointmentsForPatient(String patient) {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
-        String currentDate = LocalDateTime.now().format(formatter);
-        List<MedicalAppointmentEntity> appointmentEntitiesList = medicalAppointmentRepository.findFutureByPatient(patient,currentDate);
+        List<MedicalAppointmentEntity> appointmentEntitiesList = medicalAppointmentRepository.findFutureByPatient(patient.toUpperCase());
         return appointmentEntitiesList.stream().map(MedicalAppointmentMapper::mapMedicalAppointmentEntityToMedicalAppointment).toList();
     }
 

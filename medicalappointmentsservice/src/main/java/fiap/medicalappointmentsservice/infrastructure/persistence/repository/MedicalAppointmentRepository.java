@@ -7,6 +7,7 @@ import fiap.medicalappointmentsservice.infrastructure.persistence.entity.Medical
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -43,7 +44,7 @@ public class MedicalAppointmentRepository implements MedicalAppointmentRepositor
     }
 
     @Override
-    public List<MedicalAppointmentEntity> findFutureByPatient(String patient, String currentDate) {
-        return jpaMedicalAppointmentRepository.findFutureByPatient(patient, currentDate);
+    public List<MedicalAppointmentEntity> findFutureByPatient(String patient) {
+        return jpaMedicalAppointmentRepository.findFutureByPatient(patient);
     }
 }

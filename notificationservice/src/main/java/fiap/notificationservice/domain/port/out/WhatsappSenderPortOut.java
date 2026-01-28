@@ -1,6 +1,6 @@
 package fiap.notificationservice.domain.port.out;
 
-public interface WathsappSenderPortOut {
+public interface WhatsappSenderPortOut {
 
     void sendNotification(String phoneNumber, String message);
 }
