@@ -1,5 +1,6 @@
 package fiap.medicalappointmentsservice.domain.port.out;
 
+import fiap.medicalappointmentsservice.domain.model.MedicalAppointment;
 import fiap.medicalappointmentsservice.infrastructure.persistence.entity.MedicalAppointmentEntity;
 
 import java.util.List;
@@ -7,8 +8,6 @@ import java.util.Optional;
 
 
 public interface MedicalAppointmentRepositoryPortOut {
-
-    void flush();
 
     void save(MedicalAppointmentEntity medicalAppointment);
 
@@ -18,6 +17,6 @@ public interface MedicalAppointmentRepositoryPortOut {
     Optional<List<MedicalAppointmentEntity>> findAll();
 
     List<MedicalAppointmentEntity> findByPatient(String patient);
-    List<MedicalAppointmentEntity> findFutureByPatient(String patient, String date);
 
+    List<MedicalAppointmentEntity> findFutureByPatient(String patient, String currentDate);
 }

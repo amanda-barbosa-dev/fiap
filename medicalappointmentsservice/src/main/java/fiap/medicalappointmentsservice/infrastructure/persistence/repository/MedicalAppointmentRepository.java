@@ -1,6 +1,7 @@
 package fiap.medicalappointmentsservice.infrastructure.persistence.repository;
 
 
+import fiap.medicalappointmentsservice.domain.model.MedicalAppointment;
 import fiap.medicalappointmentsservice.domain.port.out.MedicalAppointmentRepositoryPortOut;
 import fiap.medicalappointmentsservice.infrastructure.persistence.entity.MedicalAppointmentEntity;
 import lombok.RequiredArgsConstructor;
@@ -16,10 +17,6 @@ public class MedicalAppointmentRepository implements MedicalAppointmentRepositor
 
     private final JpaMedicalAppointmentRepository jpaMedicalAppointmentRepository;
 
-    @Override
-    public void flush(){
-        jpaMedicalAppointmentRepository.flush();
-    }
     @Override
     public void save(MedicalAppointmentEntity medicalAppointment) {
         jpaMedicalAppointmentRepository.save(medicalAppointment);
@@ -46,7 +43,7 @@ public class MedicalAppointmentRepository implements MedicalAppointmentRepositor
     }
 
     @Override
-    public List<MedicalAppointmentEntity> findFutureByPatient(String patient, String date) {
-        return jpaMedicalAppointmentRepository.findFutureByPatient(patient, date);
+    public List<MedicalAppointmentEntity> findFutureByPatient(String patient, String currentDate) {
+        return jpaMedicalAppointmentRepository.findFutureByPatient(patient, currentDate);
     }
 }

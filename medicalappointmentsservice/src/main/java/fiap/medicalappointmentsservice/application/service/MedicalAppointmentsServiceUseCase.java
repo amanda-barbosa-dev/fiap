@@ -1,6 +1,7 @@
 package fiap.medicalappointmentsservice.application.service;
 
-
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import fiap.medicalappointmentsservice.domain.dto.CreateAppointmentDto;
 import fiap.medicalappointmentsservice.domain.dto.UpdateAppointmentDto;
 import fiap.medicalappointmentsservice.domain.model.MedicalAppointment;
@@ -12,8 +13,12 @@ import fiap.medicalappointmentsservice.shared.enuns.AppointmentStatus;
 import fiap.medicalappointmentsservice.shared.validator.MedicalAppointmentValidator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
-import tools.jackson.databind.ObjectMapper;
+
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
 
 import static fiap.medicalappointmentsservice.application.service.mapper.MedicalAppointmentMapper.*;
 
@@ -58,10 +63,10 @@ public class MedicalAppointmentsServiceUseCase implements SchedulerServicePortIn
 
 
     @Override
-    public MedicalAppointment updateMedicalAppointment(Long idDto, UpdateAppointmentDto updateAppointmentDto, AppointmentStatus appointmentStatus) {
-        log.info("Service - updateMedicalAppointment - request: ID {}: {} - {}", idDto, updateAppointmentDto, appointmentStatus);
+    public MedicalAppointment updateMedicalAppointment(Long id, UpdateAppointmentDto updateAppointmentDto, AppointmentStatus appointmentStatus) {
+        log.info("Service - updateMedicalAppointment - request: ID {}: {} - {}", id, updateAppointmentDto, appointmentStatus);
 
-        MedicalAppointment medicalAppointmentRequest = mapUpdateMedicalAppointmentDtoToMedicalAppointment(idDto, updateAppointmentDto, appointmentStatus);
+        MedicalAppointment medicalAppointmentRequest = mapUpdateMedicalAppointmentDtoToMedicalAppointment(id, updateAppointmentDto, appointmentStatus);
         MedicalAppointment validMedicalAppointment = medicalAppointmentValidator.validateUpdateMedicalAppointment(medicalAppointmentRequest);
         MedicalAppointmentEntity mappedMedicalAppointmentEntity;
 
@@ -69,27 +74,15 @@ public class MedicalAppointmentsServiceUseCase implements SchedulerServicePortIn
             log.info("Service - updateMedicalAppointment - Updating medical appointment");
 
 
-
             if (validMedicalAppointment.isRescheduled()) {
+                medicalAppointmentRepository.update(id,validMedicalAppointment.getStatus(), validMedicalAppointment.getAppointmentDate());
+                mappedMedicalAppointmentEntity = mapValidMedicalAppointmentToMedicalAppointmentEntity(validMedicalAppointment);
+                medicalAppointmentRepository.save(mappedMedicalAppointmentEntity);
 
-                medicalAppointmentRepository.update(idDto,validMedicalAppointment.getStatus(), validMedicalAppointment.getAppointmentDate());
 
-                CreateAppointmentDto createAppointmentDto = CreateAppointmentDto.builder()
-                        .id(idDto)
-                        .patient(validMedicalAppointment.getPatient())
-                        .phoneNumber(validMedicalAppointment.getPhoneNumber())
-                        .doctor(validMedicalAppointment.getDoctor())
-                        .medicalSpecialty(validMedicalAppointment.getMedicalSpecialty())
-                        .appointmentDate(updateAppointmentDto.getAppointmentDate())
-                        .build();
 
-                MedicalAppointment createMedicalAppointmentRequest = mapCreateMedicalAppointmentDtoToMedicalAppointment(createAppointmentDto);
-                MedicalAppointment validCreateMedicalAppointment = medicalAppointmentValidator.validadeCreateMedicalAppointment(createMedicalAppointmentRequest);
-                MedicalAppointmentEntity mappedCreateMedicalAppointmentEntity = mapValidMedicalAppointmentToMedicalAppointmentEntity(validCreateMedicalAppointment);
-                medicalAppointmentRepository.save(mappedCreateMedicalAppointmentEntity);
-                mappedMedicalAppointmentEntity = mappedCreateMedicalAppointmentEntity;
             } else {
-                medicalAppointmentRepository.update(idDto,validMedicalAppointment.getStatus(), validMedicalAppointment.getAppointmentDate());
+                medicalAppointmentRepository.update(id, validMedicalAppointment.getStatus(), validMedicalAppointment.getAppointmentDate());
                 mappedMedicalAppointmentEntity = mapValidMedicalAppointmentToMedicalAppointmentEntity(validMedicalAppointment);
             }
 
@@ -105,15 +98,31 @@ public class MedicalAppointmentsServiceUseCase implements SchedulerServicePortIn
 
         log.info("Service - updateMedicalAppointment - sending kafka evet: {}", medicalAppointmentResponse);
 
+        try {
+            String jsonOutput = objectMapper.writeValueAsString(medicalAppointmentResponse);
+            System.out.println(jsonOutput);
 
-           objectMapper.writeValueAsString(medicalAppointmentResponse);
-
-
-
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("Error converting medical appointment to event");
+        }
 
         eventProducerPortOut.sendEvent("medical-events-topic", medicalAppointmentResponse.toString());
 
         return medicalAppointmentResponse;
+    }
+
+
+    public List<MedicalAppointment> allAppointmentsForPatient(String patient) {
+        List<MedicalAppointmentEntity> appointmentEntitiesList = medicalAppointmentRepository.findByPatient(patient);
+        return appointmentEntitiesList.stream().map(MedicalAppointmentMapper::mapMedicalAppointmentEntityToMedicalAppointment).toList();
+    }
+
+
+    public List<MedicalAppointment> futureAppointmentsForPatient(String patient) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+        String currentDate = LocalDateTime.now().format(formatter);
+        List<MedicalAppointmentEntity> appointmentEntitiesList = medicalAppointmentRepository.findFutureByPatient(patient,currentDate);
+        return appointmentEntitiesList.stream().map(MedicalAppointmentMapper::mapMedicalAppointmentEntityToMedicalAppointment).toList();
     }
 
 }
