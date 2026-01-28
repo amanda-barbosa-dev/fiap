@@ -71,4 +71,31 @@ public class MedicalAppointmentMapper {
 
 
     }
+
+    public static String mapMedicalAppointmentToJson(MedicalAppointment medicalAppointment) {
+        return String.format(
+                "{\n" +
+                        "                \"id\": \"%s\",\n" +
+                        "                \"createDate\": \"%s\",\n" +
+                        "                \"updateDate\": \"%s\",\n" +
+                        "                \"patient\": \"%s\",\n" +
+                        "                \"phoneNumber\": \"%s\",\n" +
+                        "                \"doctor\": \"%s\",\n" +
+                        "                \"medicalSpecialty\": \"%s\",\n" +
+                        "                \"status\": \"%s\",\n" +
+                        "                \"appointmentDate\": \"%s\",\n" +
+                        "                \"isRescheduled\": %s\n" +
+                        "            }",
+                medicalAppointment.getId(),
+                medicalAppointment.getCreateDate(),
+                medicalAppointment.getUpdateDate(),
+                medicalAppointment.getPatient(),
+                medicalAppointment.getPhoneNumber(),
+                medicalAppointment.getDoctor(),
+                medicalAppointment.getMedicalSpecialty(),
+                medicalAppointment.getStatus(),
+                medicalAppointment.getAppointmentDate(),
+                medicalAppointment.isRescheduled()
+        );
+    }
 }

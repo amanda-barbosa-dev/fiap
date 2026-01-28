@@ -31,7 +31,7 @@ public class MedicalAppointmentsServiceUseCase implements SchedulerServicePortIn
     private final MedicalAppointmentRepository medicalAppointmentRepository;
     private final MedicalAppointmentValidator medicalAppointmentValidator;
     private final EventProducerPortOut eventProducerPortOut;
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    private final String TOPIC = "medical-appointments-topic";
 
     @Override
     public MedicalAppointment createMedicalAppointment(CreateAppointmentDto createAppointmentDto) {
@@ -55,7 +55,10 @@ public class MedicalAppointmentsServiceUseCase implements SchedulerServicePortIn
 
         log.info("Service - createMedicalAppointment - response: {}", medicalAppointmentResponse);
 
-        eventProducerPortOut.sendEvent("medical-events-topic", medicalAppointmentResponse);
+        String medicalAppointmentEventJson = mapMedicalAppointmentToJson(medicalAppointmentResponse);
+        log.info("Service - updateMedicalAppointment - sending kafka evet: {}", medicalAppointmentEventJson);
+
+        eventProducerPortOut.sendEvent(TOPIC, medicalAppointmentEventJson);
 
 
         return medicalAppointmentResponse;
@@ -73,7 +76,6 @@ public class MedicalAppointmentsServiceUseCase implements SchedulerServicePortIn
 
         try {
             log.info("Service - updateMedicalAppointment - Updating medical appointment");
-
 
             if (validMedicalAppointment.isRescheduled()) {
                 medicalAppointmentRepository.update(id,validMedicalAppointment.getStatus(), validMedicalAppointment.getAppointmentDate());
@@ -97,10 +99,10 @@ public class MedicalAppointmentsServiceUseCase implements SchedulerServicePortIn
 
         log.info("Service - updateMedicalAppointment - response: {}", medicalAppointmentResponse);
 
-        log.info("Service - updateMedicalAppointment - sending kafka evet: {}", medicalAppointmentResponse);
+        String medicalAppointmentEventJson = mapMedicalAppointmentToJson(medicalAppointmentResponse);
+        log.info("Service - updateMedicalAppointment - sending kafka evet: {}", medicalAppointmentEventJson);
 
-
-        eventProducerPortOut.sendEvent("medical-events-topic", medicalAppointmentResponse);
+        eventProducerPortOut.sendEvent(TOPIC, medicalAppointmentEventJson);
 
         return medicalAppointmentResponse;
     }

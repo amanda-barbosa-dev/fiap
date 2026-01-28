@@ -8,15 +8,15 @@ import org.springframework.stereotype.Component;
 @Component
 public class KafkaProducer implements EventProducerPortOut {
 
-    private final KafkaTemplate<String, MedicalAppointment> kafkaTemplate;
+    private final KafkaTemplate<String, String> kafkaTemplate;
 
 
-    public KafkaProducer(KafkaTemplate<String, MedicalAppointment> kafkaTemplate) {
+    public KafkaProducer(KafkaTemplate<String, String> kafkaTemplate) {
         this.kafkaTemplate = kafkaTemplate;
     }
 
     @Override
-    public void sendEvent(String topic, MedicalAppointment event) {
+    public void sendEvent(String topic, String event) {
         kafkaTemplate.send(topic, event);
     }
 }

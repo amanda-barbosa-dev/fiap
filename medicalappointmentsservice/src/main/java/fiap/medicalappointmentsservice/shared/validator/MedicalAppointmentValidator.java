@@ -21,7 +21,6 @@ import java.util.Optional;
 @Component
 @Data
 @RequiredArgsConstructor
-@Slf4j
 public class MedicalAppointmentValidator {
 
     private final MedicalAppointmentRepositoryPortOut medicalAppointmentRepository;
@@ -36,6 +35,7 @@ public class MedicalAppointmentValidator {
     String checkedAppointmentDate;
     String checkedPhoneNumber;
     MedicalAppointmentEntity entity;
+    Long checkedId;
     Long id;
 
 
@@ -43,7 +43,7 @@ public class MedicalAppointmentValidator {
     public MedicalAppointment validateUpdateMedicalAppointment(MedicalAppointment medicalAppointment) throws IllegalArgumentException {
 
 
-        id = medicalAppointment.getId();
+        Long id = medicalAppointment.getId();
         String status = medicalAppointment.getStatus();
 
 
@@ -56,6 +56,7 @@ public class MedicalAppointmentValidator {
              checkedDoctor = entity.getDoctor();
              checkedMedicalSpecialty = entity.getMedicalSpecialty();
              checkedPhoneNumber = entity.getPhoneNumber();
+             checkedId = entity.getId();
 
 
 
@@ -64,6 +65,8 @@ public class MedicalAppointmentValidator {
             checkedAppointmentDate = entity.getAppointmentDate();
             return MedicalAppointment.builder()
                     .id(id)
+                    .createDate(checkedCreateDate)
+                    .updateDate(checkedUpdateDate)
                     .appointmentDate(checkedAppointmentDate)
                     .status("CANCELED")
                     .patient(checkedPatient)
