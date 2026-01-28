@@ -56,7 +56,7 @@ public class MedicalAppointmentsServiceUseCase implements SchedulerServicePortIn
         log.info("Service - createMedicalAppointment - response: {}", medicalAppointmentResponse);
 
         String medicalAppointmentEventJson = mapMedicalAppointmentToJson(medicalAppointmentResponse);
-        log.info("Service - updateMedicalAppointment - sending kafka evet: {}", medicalAppointmentEventJson);
+        log.info("Service - createMedicalAppointment - sending kafka evet: {}", medicalAppointmentEventJson);
 
         eventProducerPortOut.sendEvent(TOPIC, medicalAppointmentEventJson);
 
@@ -69,7 +69,6 @@ public class MedicalAppointmentsServiceUseCase implements SchedulerServicePortIn
     @Override
     public MedicalAppointment updateMedicalAppointment(Long id, UpdateAppointmentDto updateAppointmentDto, AppointmentStatus appointmentStatus) {
         log.info("Service - updateMedicalAppointment - request: ID {}: {} - {}", id, updateAppointmentDto, appointmentStatus);
-
         MedicalAppointment medicalAppointmentRequest = mapUpdateMedicalAppointmentDtoToMedicalAppointment(id, updateAppointmentDto, appointmentStatus);
         MedicalAppointment validMedicalAppointment = medicalAppointmentValidator.validateUpdateMedicalAppointment(medicalAppointmentRequest);
         MedicalAppointmentEntity mappedMedicalAppointmentEntity;
@@ -79,6 +78,9 @@ public class MedicalAppointmentsServiceUseCase implements SchedulerServicePortIn
 
             if (validMedicalAppointment.isRescheduled()) {
                 medicalAppointmentRepository.update(id,validMedicalAppointment.getStatus(), validMedicalAppointment.getAppointmentDate());
+                validMedicalAppointment.setStatus("SCHEDULED");
+                validMedicalAppointment.setCreateDate(validMedicalAppointment.getUpdateDate());
+                validMedicalAppointment.setAppointmentDate(updateAppointmentDto.getAppointmentDate());
                 mappedMedicalAppointmentEntity = mapValidMedicalAppointmentToMedicalAppointmentEntity(validMedicalAppointment);
                 medicalAppointmentRepository.save(mappedMedicalAppointmentEntity);
 
@@ -87,6 +89,7 @@ public class MedicalAppointmentsServiceUseCase implements SchedulerServicePortIn
             } else {
                 medicalAppointmentRepository.update(id, validMedicalAppointment.getStatus(), validMedicalAppointment.getAppointmentDate());
                 mappedMedicalAppointmentEntity = mapValidMedicalAppointmentToMedicalAppointmentEntity(validMedicalAppointment);
+                mappedMedicalAppointmentEntity.setId(id);
             }
 
 

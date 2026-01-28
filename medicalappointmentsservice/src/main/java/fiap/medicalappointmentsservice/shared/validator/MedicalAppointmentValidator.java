@@ -43,7 +43,7 @@ public class MedicalAppointmentValidator {
     public MedicalAppointment validateUpdateMedicalAppointment(MedicalAppointment medicalAppointment) throws IllegalArgumentException {
 
 
-        Long id = medicalAppointment.getId();
+        id = medicalAppointment.getId();
         String status = medicalAppointment.getStatus();
 
 
