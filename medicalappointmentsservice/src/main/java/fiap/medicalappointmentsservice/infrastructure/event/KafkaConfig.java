@@ -1,4 +1,4 @@
-package fiap.medicalappointmentsservice.infrastructure.event.config;
+package fiap.medicalappointmentsservice.infrastructure.event;
 
 
 import com.fasterxml.jackson.databind.ser.std.StringSerializer;

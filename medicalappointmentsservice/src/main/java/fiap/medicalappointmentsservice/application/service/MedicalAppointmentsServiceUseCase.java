@@ -2,6 +2,7 @@ package fiap.medicalappointmentsservice.application.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import fiap.medicalappointmentsservice.application.service.mapper.MedicalAppointmentMapper;
 import fiap.medicalappointmentsservice.domain.dto.CreateAppointmentDto;
 import fiap.medicalappointmentsservice.domain.dto.UpdateAppointmentDto;
 import fiap.medicalappointmentsservice.domain.model.MedicalAppointment;
