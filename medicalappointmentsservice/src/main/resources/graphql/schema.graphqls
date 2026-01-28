@@ -1,0 +1,17 @@
+type Query {
+    allAppointmentsForPatient(patient: String!): [MedicalAppointment]
+    futureAppointmentsForPatient(patient: String!): [MedicalAppointment]
+}
+
+type MedicalAppointment {
+    id: ID
+    createDate: String
+    updateDate: String
+    patient: String
+    phoneNumber: String
+    doctor: String
+    medicalSpecialty: String
+    status: String
+    appointmentDate: String
+    isRescheduled: Boolean
+}
