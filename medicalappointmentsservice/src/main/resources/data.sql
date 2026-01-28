@@ -10,5 +10,5 @@ VALUES (3, 'ANA LUISA SOUZA', NULL, 'ANASOUZA', 'ANASOUZA', 'NURSE');
 INSERT INTO tb_users (id, name, medical_specialty, password, username, role)
 VALUES (4, 'MARCOS COSTA RODRIGUES', 'ORTHOPEDIST', 'MARCOSORTHO', 'MARCOSORTHO', 'DOCTOR');
 
-INSERT INTO tb_users (id, name, medical_specialty, password, username, role)
+INSERT INTO tb_users (id, name, , medical_specialty, password, username, role)
 VALUES (5, 'ALESSANDRA MARIA SUZANA', NULL, 'ALESUZ', 'ALESUZ', 'PATIENT');
