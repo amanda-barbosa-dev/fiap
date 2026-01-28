@@ -2,6 +2,7 @@ package fiap.medicalappointmentsservice.application.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import fiap.medicalappointmentsservice.application.service.mapper.MedicalAppointmentMapper;
 import fiap.medicalappointmentsservice.domain.dto.CreateAppointmentDto;
 import fiap.medicalappointmentsservice.domain.dto.UpdateAppointmentDto;
 import fiap.medicalappointmentsservice.domain.model.MedicalAppointment;
@@ -13,7 +14,12 @@ import fiap.medicalappointmentsservice.shared.enuns.AppointmentStatus;
 import fiap.medicalappointmentsservice.shared.validator.MedicalAppointmentValidator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
+
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
 
 import static fiap.medicalappointmentsservice.application.service.mapper.MedicalAppointmentMapper.*;
 
@@ -105,4 +111,19 @@ public class MedicalAppointmentsServiceUseCase implements SchedulerServicePortIn
 
         return medicalAppointmentResponse;
     }
+
+
+    public List<MedicalAppointment> allAppointmentsForPatient(String patient) {
+        List<MedicalAppointmentEntity> appointmentEntitiesList = medicalAppointmentRepository.findByPatient(patient);
+        return appointmentEntitiesList.stream().map(MedicalAppointmentMapper::mapMedicalAppointmentEntityToMedicalAppointment).toList();
+    }
+
+
+    public List<MedicalAppointment> futureAppointmentsForPatient(String patient) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+        String currentDate = LocalDateTime.now().format(formatter);
+        List<MedicalAppointmentEntity> appointmentEntitiesList = medicalAppointmentRepository.findFutureByPatient(patient,currentDate);
+        return appointmentEntitiesList.stream().map(MedicalAppointmentMapper::mapMedicalAppointmentEntityToMedicalAppointment).toList();
+    }
+
 }

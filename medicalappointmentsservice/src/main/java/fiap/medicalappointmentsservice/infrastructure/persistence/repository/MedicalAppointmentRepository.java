@@ -1,7 +1,6 @@
 package fiap.medicalappointmentsservice.infrastructure.persistence.repository;
 
 
-import fiap.medicalappointmentsservice.domain.model.MedicalAppointment;
 import fiap.medicalappointmentsservice.domain.port.out.MedicalAppointmentRepositoryPortOut;
 import fiap.medicalappointmentsservice.infrastructure.persistence.entity.MedicalAppointmentEntity;
 import lombok.RequiredArgsConstructor;
@@ -38,12 +37,12 @@ public class MedicalAppointmentRepository implements MedicalAppointmentRepositor
     }
 
     @Override
-    public List<MedicalAppointment> findByPatient(String patient) {
+    public List<MedicalAppointmentEntity> findByPatient(String patient) {
         return jpaMedicalAppointmentRepository.findByPatient(patient);
     }
 
     @Override
-    public List<MedicalAppointment> findFutureByPatient(String patient) {
-        return jpaMedicalAppointmentRepository.findFutureByPatient(patient);
+    public List<MedicalAppointmentEntity> findFutureByPatient(String patient, String currentDate) {
+        return jpaMedicalAppointmentRepository.findFutureByPatient(patient, currentDate);
     }
 }
